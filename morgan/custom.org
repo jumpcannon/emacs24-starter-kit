@@ -1,0 +1,399 @@
+#+TITLE: Personalized Configuration
+#+OPTIONS: toc:nil num:nil ^:nil
+
+* Packages to load from starter-kit
+#+begin_src emacs-lisp
+(starter-kit-load "misc-recommended")
+;(starter-kit-load "eshell")
+(starter-kit-load "org")
+;(starter-kit-load "lisp")
+;(setf abbrev-file-name "~/.emacs.d/abbrev_defs")
+;(starter-kit-load "python")
+;(starter-kit-load "ruby")
+#+end_src
+
+* Personalized Configuration
+** Plumbing
+*** Add melpa to package-archives list
+#+begin_src emacs-lisp
+(add-to-list 'package-archives
+             '("melpa" . "http://melpa.milkbox.net/packages/") t)
+#+end_src
+** Languages
+*** General language settings
+#+begin_src emacs-lisp
+(setq-default 
+  c-basic-offset 2 
+  tab-width 2 
+  indent-tabs-mode nil)
+#+end_src
+
+*** starter-kit-lisp replacement
+#+begin_src emacs-lisp
+(define-key read-expression-map (kbd "TAB") 'lisp-complete-symbol)
+(define-key lisp-mode-shared-map (kbd "C-c l") "lambda")
+(define-key lisp-mode-shared-map (kbd "RET") 'reindent-then-newline-and-indent)
+(define-key lisp-mode-shared-map (kbd "C-\\") 'lisp-complete-symbol)
+;; (define-key lisp-mode-shared-map (kbd "C-c v") 'eval-buffer)
+
+(dolist (package '(paredit ac-nrepl clojure-mode cider rainbow-delimiters))
+  (unless (package-installed-p package)
+    (package-install package)))
+
+(require 'paredit)
+
+(defun turn-on-paredit ()
+  (paredit-mode +1))
+
+(add-hook 'emacs-lisp-mode-hook       'turn-on-paredit)
+(add-hook 'lisp-mode-hook             'turn-on-paredit)
+(add-hook 'lisp-interaction-mode-hook 'turn-on-paredit)
+(add-hook 'scheme-mode-hook           'turn-on-paredit)
+(add-hook 'clojure-mode-hook          'turn-on-paredit)
+(add-hook 'cider-repl-mode-hook       'turn-on-paredit)
+(add-hook 'sibiliant-mode-hook        'turn-on-paredit)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Emacs lisp
+
+(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'emacs-lisp-mode-hook 'run-starter-kit-coding-hook)
+(add-hook 'emacs-lisp-mode-hook 'starter-kit-remove-elc-on-save)
+;(add-hook 'emacs-lisp-mode-hook 'idle-highlight)
+(define-key emacs-lisp-mode-map (kbd "C-c v") 'eval-buffer)
+
+(defun starter-kit-remove-elc-on-save ()
+  "If you're saving an elisp file, likely the .elc is no longer valid."
+  (make-local-variable 'after-save-hook)
+  (add-hook 'after-save-hook
+            (lambda ()
+              (if (file-exists-p (concat buffer-file-name "c"))
+                  (delete-file (concat buffer-file-name "c"))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Clojure
+
+(require 'cider)
+
+(add-hook 'clojure-mode-hook 'run-starter-kit-coding-hook)
+;(add-hook 'clojure-mode-hook 'idle-highlight)
+
+(setq auto-mode-alist (cons '("\\.edn$" . clojure-mode) auto-mode-alist)) 
+(setq auto-mode-alist (cons '("\\.cljs$" . clojure-mode) auto-mode-alist))
+
+
+(setq cider-hide-special-buffers t) 
+(setq cider-popup-on-error nil) 
+(setq cider-popup-stacktraces-in-repl t) 
+(setq cider-history-file "~/.emacs.d/cider-history")
+
+ 
+(add-hook 'cider-interaction-mode-hook 'cider-turn-on-eldoc-mode) 
+(add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode) 
+#+end_src
+
+*** Javascript IDE
+#+begin_src emacs-lisp
+(dolist (package '(js2-mode))
+  (unless (package-installed-p package)
+    (package-install package)))
+
+(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
+
+#+end_src
+*** Additional org-mode configuration
+#+begin_src emacs-lisp
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(setq org-log-done t)
+#+end_src
+
+*** Config for eshell
+#+begin_src emacs-lisp
+(setq eshell-cmpl-cycle-completions nil
+      eshell-save-history-on-exit t
+      eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
+
+;; This is a hack, why isn't Emacs detecting the PATH correctly?
+(push "/usr/local/bin" exec-path)
+(push (expand-file-name "~/bin") exec-path)
+
+(setenv "PAGER" "cat")
+(defalias 'ff 'find-file)
+(defalias 'fo 'find-file-other-window)
+#+end_src
+
+** Look and feel
+*** Evil mode
+#+begin_src emacs-lisp
+(message "evil-mode")
+(dolist (package '(undo-tree evil))
+  (unless (package-installed-p package)
+    (package-install package)))
+
+(require 'undo-tree)
+(require 'evil)
+(evil-mode 1)
+(setq evil-default-cursor t)
+
+(column-number-mode)
+
+(define-key minibuffer-local-map "%"
+  (function
+   (lambda ()
+     (interactive)
+     (insert (file-name-nondirectory
+	      (buffer-file-name
+	       (window-buffer (minibuffer-selected-window))))))))
+
+;; Some emacs keys are just too nice to get rid of.
+(defun evil-multi-state-define-key (key command)
+  (define-key evil-normal-state-map key command)
+  (define-key evil-motion-state-map key command))
+
+(evil-multi-state-define-key "\C-e" 'evil-end-of-line)
+(evil-multi-state-define-key "\C-k" 'evil-delete-line)
+(evil-multi-state-define-key "\C-w" 'evil-delete-backward-word)
+#+end_src
+
+*** Hide scroll bars and toolbars
+#+begin_src emacs-lisp
+  (scroll-bar-mode 0)
+  (tool-bar-mode -1)
+#+end_src
+*** Color Theme, cursor color, font
+#+begin_src emacs-lisp
+;(load-theme 'wombat t)
+(dolist (package '(cyberpunk-theme))
+  (unless (package-installed-p package)
+    (package-install package)))
+
+(load-theme 'cyberpunk t)
+;(set-face-attribute 'default nil :font "Source Code Pro-12")
+;(set-cursor-color "palegoldenrod")
+
+(global-hl-line-mode 1)
+
+;; Transparent windows!
+;(add-to-list 'default-frame-alist '(alpha 90 85))
+;(set-frame-parameter (selected-frame) 'alpha '(90 85))
+
+#+end_src
+
+*** Unhide menu bar on Mac OS X
+   On Mac OS X, the top of the screen is going to be devoted to the
+   menu bar anyway, so we may as well show it.
+#+begin_src emacs-lisp
+(if (eq window-system 'ns)
+    (menu-bar-mode 1))
+#+end_src
+
+*** Rainbow-delimiters
+#+begin_src emacs-lisp
+(dolist (package '(rainbow-delimiters))
+  (unless (package-installed-p package)
+    (package-install package)))
+
+(require 'rainbow-delimiters)
+(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+#+end_src
+
+*** Disable bell
+#+begin_src emacs-lisp
+(setq ring-bell-function 'ignore)
+#+end_src
+*** Parentheses
+#+begin_src emacs-lisp
+(setq show-paren-style 'expression)
+#+end_src
+
+*** Column markers
+#+begin_src emacs-lisp
+(dolist (package '(column-marker))
+  (unless (package-installed-p package)
+    (package-install package)))
+
+(column-marker-1 78)
+(column-marker-2 80)
+#+end_src
+
+*** Initial frame size
+#+begin_src emacs-lisp
+(add-to-list 'default-frame-alist '(height . 56))
+(add-to-list 'default-frame-alist '(width . 200))
+#+end_src
+
+** Paredit mode for non-sexp languages
+   from https://gist.github.com/remvee/879305
+#+begin_src emacs-lisp
+;; Enable paredit for a couple for non lisp modes; tweak
+;; paredit-space-for-delimiter-predicates to avoid inserting spaces
+;; before open parens.
+(dolist (mode '(ruby espresso python))
+  (add-hook (intern (format "%s-mode-hook" mode))
+            '(lambda ()
+               (add-to-list (make-local-variable 'paredit-space-for-delimiter-predicates)
+                            (lambda (_ _) nil))
+               (enable-paredit-mode))))
+#+end_src
+** Ruby Version Manager
+#+begin_src emacs-lisp
+(message "Ruby Version Manager")
+(dolist (package '(rvm))
+  (unless (package-installed-p package)
+    (package-install package)))
+
+(require 'rvm)
+(rvm-use-default)
+#+end_src
+
+** Ensure newlines at end of files
+#+begin_src emacs-lisp
+(message "Ensure newlines")
+(setq require-final-newline 't) 
+#+end_src
+
+** Factual utils
+#+begin_src emacs-lisp
+(message "Factual utils")
+
+(defun crow-get-package-and-name (target)
+  (let* ((s (split-string target "\\."))
+         (package (mapconcat 'identity (butlast s) "."))
+         (name (car (last s))))
+    (list package name)))
+
+(defun crow-get-filename (target)
+  nil)
+
+
+
+
+#+end_src
+** misc utils
+*** duck-duck-go
+#+begin_src emacs-lisp
+(defun duck-duck-go ()
+  "Search the selected region if any, display a query prompt otherwise."
+  (interactive)
+  (browse-url
+   (concat
+    "https://duckduckgo.com/?q="
+    (url-hexify-string
+      (read-string "Search: "
+                   (and mark-active
+                        (buffer-substring (region-beginning) (region-end))))))))
+
+(global-set-key (kbd "C-c d") 'duck-duck-go)
+#+end_src
+
+*** TRAMP mode
+#+begin_src emacs-lisp
+(setq tramp-default-method "ssh")
+#+end_src
+
+*** Modify number at point defuns
+#+begin_src emacs-lisp
+(defun increment-number-at-point (&optional n)
+  (interactive "p*")
+  (skip-chars-backward "0123456789")
+  (or (looking-at "[0123456789]+")
+      (error "No number at point"))
+  (replace-match (number-to-string (+ (string-to-number (match-string 0)) (or n 1))))
+  (backward-word))
+
+(defun decrement-number-at-point (&optional n)
+  (interactive "p*")
+  (increment-number-at-point (* -1 (or n 1))))
+
+#+end_src
+    
+*** eval-last-sexp-nicer
+#+begin_src emacs-lisp
+;; Thanks egamble!
+(message "eval-last-sexp-nicer")
+
+(defun eval-last-sexp-nicer ()
+  (interactive)
+  (let ((standard-output (current-buffer)))
+    (end-of-line)
+    (terpri)
+    (eval-last-sexp t)
+    (beginning-of-line)
+    (insert ";; => ")
+    (end-of-line)
+    (terpri)))
+
+(defun cider-eval-last-sexp-nicer ()
+  (interactive)
+  (let ((last-sexp (cider-last-sexp)))
+    (insert "\n;; => ")
+    (cider-interactive-eval-print last-sexp)))
+
+#+end_src
+
+** misc keys
+#+begin_src emacs-lisp
+(message "misc keys")
+(global-set-key (kbd "C-c ;") 'comment-or-uncomment-region)
+(global-set-key (kbd "C-c e") 'eval-last-sexp-nicer)
+(global-set-key (kbd "C-c E") 'eval-region)
+(global-set-key (kbd "C-c r") 'revert-buffer)
+
+(global-set-key (kbd "C-c +") 'increment-number-at-point)
+(global-set-key (kbd "C-c -") 'decrement-number-at-point)
+
+;; As per http://stackoverflow.com/questions/683425/globally-override-key-binding-in-emacs
+(defvar my-keys-minor-mode-map (make-keymap)
+  "my-keys-minor-mode keymap.")
+
+(define-key my-keys-minor-mode-map (kbd "<C-tab>") 'next-multiframe-window)
+(define-key my-keys-minor-mode-map (kbd "<C-S-tab>") 'previous-multiframe-window)
+
+(define-minor-mode my-keys-minor-mode
+  "A minor mode for globally overriding keybindings."
+  t " my-keys" 'my-keys-minor-mode-map)
+
+(my-keys-minor-mode 1)
+
+(defun my-minibuffer-setup-hook () (my-keys-minor-mode 0))
+
+(add-hook 'minibuffer-setup-hook 'my-minibuffer-setup-hook)
+#+END_SRC
+
+** Launch emacs server
+#+begin_src emacs-lisp
+(server-start)
+#+end_src
+
+** scratch buffer message
+#+begin_src emacs-lisp
+;; Since this goes last, you can see at a glance that the rest of the file was 
+;; loaded correctly.
+
+(defun time-of-day-greeting ()
+  (let ((hour (string-to-int
+               (car (split-string (nth 3
+                                       (split-string (current-time-string)))
+                                  ":")))))
+    (cond ((< hour 6) "Bleck, is this dreadfully early, or dreadfully late?")
+          ((< hour 12) "Good morning!")
+          ((< hour 18) "Good afternoon!")
+          (t "Good evening!"))))
+
+(setq initial-scratch-message (concat ";; " (time-of-day-greeting) "\n\n"))
+#+end_src
+
+* Meta
+** Install package template
+#+begin_src emacs-lisp
+(message "Install Package Template")
+;; (dolist (package '(SOME-NEEDED-PACKAGE))
+;;   (unless (package-installed-p package)
+;;     (package-install package)))
+
+#+end_src
+** Blank template
+#+begin_src emacs-lisp
+  (message "Blank template")
+#+end_src
