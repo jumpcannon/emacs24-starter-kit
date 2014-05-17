@@ -253,9 +253,9 @@
 (setq require-final-newline 't) 
 #+end_src
 
-** Factual utils
+** crow utils
 #+begin_src emacs-lisp
-(message "Factual utils")
+(message "crow utils")
 
 (defun crow-get-package-and-name (target)
   (let* ((s (split-string target "\\."))
@@ -264,10 +264,8 @@
     (list package name)))
 
 (defun crow-get-filename (target)
+  "Not implemented yet"
   nil)
-
-
-
 
 #+end_src
 ** misc utils
