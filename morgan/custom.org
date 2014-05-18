@@ -4,12 +4,7 @@
 * Packages to load from starter-kit
 #+begin_src emacs-lisp
 (starter-kit-load "misc-recommended")
-;(starter-kit-load "eshell")
 (starter-kit-load "org")
-;(starter-kit-load "lisp")
-;(setf abbrev-file-name "~/.emacs.d/abbrev_defs")
-;(starter-kit-load "python")
-;(starter-kit-load "ruby")
 #+end_src
 
 * Personalized Configuration
@@ -114,10 +109,6 @@
       eshell-save-history-on-exit t
       eshell-cmpl-dir-ignore "\\`\\(\\.\\.?\\|CVS\\|\\.svn\\|\\.git\\)/\\'")
 
-;; This is a hack, why isn't Emacs detecting the PATH correctly?
-(push "/usr/local/bin" exec-path)
-(push (expand-file-name "~/bin") exec-path)
-
 (setenv "PAGER" "cat")
 (defalias 'ff 'find-file)
 (defalias 'fo 'find-file-other-window)
@@ -163,21 +154,14 @@
 #+end_src
 *** Color Theme, cursor color, font
 #+begin_src emacs-lisp
-;(load-theme 'wombat t)
 (dolist (package '(cyberpunk-theme))
   (unless (package-installed-p package)
     (package-install package)))
 
 (load-theme 'cyberpunk t)
-;(set-face-attribute 'default nil :font "Source Code Pro-12")
-;(set-cursor-color "palegoldenrod")
+(set-face-attribute 'default nil :font "Source Code Pro-11")
 
 (global-hl-line-mode 1)
-
-;; Transparent windows!
-;(add-to-list 'default-frame-alist '(alpha 90 85))
-;(set-frame-parameter (selected-frame) 'alpha '(90 85))
-
 #+end_src
 
 *** Unhide menu bar on Mac OS X
@@ -269,7 +253,7 @@
 
 #+end_src
 ** misc utils
-*** duck-duck-go
+*** duck-duck-go defun
 #+begin_src emacs-lisp
 (defun duck-duck-go ()
   "Search the selected region if any, display a query prompt otherwise."
@@ -281,8 +265,6 @@
       (read-string "Search: "
                    (and mark-active
                         (buffer-substring (region-beginning) (region-end))))))))
-
-(global-set-key (kbd "C-c d") 'duck-duck-go)
 #+end_src
 
 *** TRAMP mode
@@ -333,6 +315,8 @@
 ** misc keys
 #+begin_src emacs-lisp
 (message "misc keys")
+(global-set-key (kbd "C-c d") 'duck-duck-go)
+
 (global-set-key (kbd "C-c ;") 'comment-or-uncomment-region)
 (global-set-key (kbd "C-c e") 'eval-last-sexp-nicer)
 (global-set-key (kbd "C-c E") 'eval-region)
@@ -347,6 +331,8 @@
 
 (define-key my-keys-minor-mode-map (kbd "<C-tab>") 'next-multiframe-window)
 (define-key my-keys-minor-mode-map (kbd "<C-S-tab>") 'previous-multiframe-window)
+;; But the obvious reverse version above doesn't work on my X11 >:[
+(define-key my-keys-minor-mode-map (kbd "<C-S-iso-lefttab>") 'previous-multiframe-window) 
 
 (define-minor-mode my-keys-minor-mode
   "A minor mode for globally overriding keybindings."
