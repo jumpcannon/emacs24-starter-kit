@@ -76,17 +76,14 @@
 (require 'cider)
 
 (add-hook 'clojure-mode-hook 'run-starter-kit-coding-hook)
-;(add-hook 'clojure-mode-hook 'idle-highlight)
 
 (setq auto-mode-alist (cons '("\\.edn$" . clojure-mode) auto-mode-alist)) 
 (setq auto-mode-alist (cons '("\\.cljs$" . clojure-mode) auto-mode-alist))
-
 
 (setq cider-hide-special-buffers t) 
 (setq cider-popup-on-error nil) 
 (setq cider-popup-stacktraces-in-repl t) 
 (setq cider-history-file "~/.emacs.d/cider-history")
-
  
 (add-hook 'cider-interaction-mode-hook 'cider-turn-on-eldoc-mode) 
 (add-hook 'cider-repl-mode-hook 'rainbow-delimiters-mode) 
