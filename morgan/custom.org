@@ -19,7 +19,7 @@
 #+begin_src emacs-lisp
 (setq-default 
   c-basic-offset 2 
-  tab-width 2 
+  tab-width 8
   indent-tabs-mode nil)
 #+end_src
 
