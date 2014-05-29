@@ -368,7 +368,7 @@
 * Meta
 ** Install package template
 #+begin_src emacs-lisp
-(message "Install Package Template")
+;; (message "Install Package Template")
 ;; (dolist (package '(SOME-NEEDED-PACKAGE))
 ;;   (unless (package-installed-p package)
 ;;     (package-install package)))
@@ -376,5 +376,5 @@
 #+end_src
 ** Blank template
 #+begin_src emacs-lisp
-  (message "Blank template")
+;; (message "Blank template")
 #+end_src
