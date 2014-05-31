@@ -228,10 +228,11 @@
 (rvm-use-default)
 #+end_src
 
-** Ensure newlines at end of files
+** Smarter whitespace
 #+begin_src emacs-lisp
-(message "Ensure newlines")
-(setq require-final-newline 't) 
+(message "Smarter whitespace")
+(setq require-final-newline 't)
+(setq-default show-trailing-whitespace t)
 #+end_src
 
 ** crow utils
